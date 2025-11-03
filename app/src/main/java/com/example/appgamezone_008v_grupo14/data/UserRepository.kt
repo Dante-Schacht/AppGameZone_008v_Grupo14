@@ -3,6 +3,7 @@ package com.example.appgamezone_008v_grupo14.data
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 
 class UserRepository(context: Context) {
 
@@ -10,13 +11,13 @@ class UserRepository(context: Context) {
         context.getSharedPreferences("local_users_prefs", Context.MODE_PRIVATE)
 
     fun saveUser(user: User) {
-        prefs.edit()
-            .putString(KEY_FULLNAME, user.fullName)
-            .putString(KEY_EMAIL, user.email)
-            .putString(KEY_PASSWORD, user.password)
-            .putString(KEY_PHONE, user.phone ?: "")
-            .putStringSet(KEY_GENRES, user.genres.toSet())
-            .apply()
+        prefs.edit {
+            putString(KEY_FULLNAME, user.fullName)
+            putString(KEY_EMAIL, user.email)
+            putString(KEY_PASSWORD, user.password)
+            putString(KEY_PHONE, user.phone ?: "")
+            putStringSet(KEY_GENRES, user.genres.toSet())
+        }
         Log.d(TAG, "saveUser -> ${user.email}")
     }
 
@@ -59,7 +60,9 @@ class UserRepository(context: Context) {
     }
 
     fun clearUser() {
-        prefs.edit().clear().apply()
+        prefs.edit {
+            clear()
+        }
         Log.d(TAG, "clearUser -> done")
     }
 

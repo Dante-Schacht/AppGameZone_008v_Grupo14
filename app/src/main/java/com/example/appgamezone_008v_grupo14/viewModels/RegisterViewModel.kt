@@ -23,12 +23,8 @@ class RegisterViewModel : ViewModel() {
     val genresError = mutableStateOf<String?>(null)
 
     // Estado de resultado
-    val registerSuccess = mutableStateOf(false)
     val registerServerError = mutableStateOf<String?>(null)
     val loading = mutableStateOf(false)
-
-    // (Mantén tu onRegisterClick si lo usas para UI; no guarda nada)
-    fun onRegisterClick() { /* opcional: ya no se usa para guardar */ }
 
     fun validateAndBuildUser(): User? {
         loading.value = true
