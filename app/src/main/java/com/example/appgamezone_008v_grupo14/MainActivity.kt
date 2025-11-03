@@ -3,45 +3,37 @@ package com.example.appgamezone_008v_grupo14
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.appgamezone_008v_grupo14.ui.theme.AppGameZone_008v_Grupo14Theme
+import androidx.compose.runtime.*
+import com.example.appgamezone_008v_grupo14.data.UserRepository
+import com.example.appgamezone_008v_grupo14.ui.theme.Appgamezone_008v_grupo14Theme
+import com.example.appgamezone_008v_grupo14.views.HomeScreen
+import com.example.appgamezone_008v_grupo14.views.LoginScreen
+import com.example.appgamezone_008v_grupo14.views.RegisterScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            AppGameZone_008v_Grupo14Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+            // ⚠️ AJUSTA el nombre del Theme a tu proyecto real (revisa /ui/theme/*)
+            Appgamezone_008v_grupo14Theme {
+                val repo = remember { UserRepository(this) }
+                var currentScreen by remember {
+                    mutableStateOf(if (repo.getSavedUser() != null) "home" else "login")
+                }
+
+                when (currentScreen) {
+                    "login" -> LoginScreen(
+                        onLoginSuccess = { currentScreen = "home" },
+                        onGoToRegister = { currentScreen = "register" }
+                    )
+                    "register" -> RegisterScreen(
+                        onGoToLogin = { currentScreen = "login" }
+                    )
+                    "home" -> HomeScreen(
+                        onLogout = { currentScreen = "login" }
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AppGameZone_008v_Grupo14Theme {
-        Greeting("Android")
     }
 }
