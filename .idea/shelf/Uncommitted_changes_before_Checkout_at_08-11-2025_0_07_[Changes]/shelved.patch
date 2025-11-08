@@ -1,0 +1,110 @@
+Index: app/src/main/java/com/example/appgamezone_008v_grupo14/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.appgamezone_008v_grupo14\r\n\r\nimport android.os.Bundle\r\nimport androidx.activity.ComponentActivity\r\nimport androidx.activity.compose.setContent\r\nimport androidx.compose.runtime.*\r\nimport com.example.appgamezone_008v_grupo14.data.UserRepository\r\nimport com.example.appgamezone_008v_grupo14.ui.theme.Appgamezone_008v_grupo14Theme\r\nimport com.example.appgamezone_008v_grupo14.views.HomeScreen\r\nimport com.example.appgamezone_008v_grupo14.views.LoginScreen\r\nimport com.example.appgamezone_008v_grupo14.views.RegisterScreen\r\n\r\nclass MainActivity : ComponentActivity() {\r\n    override fun onCreate(savedInstanceState: Bundle?) {\r\n        super.onCreate(savedInstanceState)\r\n        setContent {\r\n            // ⚠\uFE0F AJUSTA el nombre del Theme a tu proyecto real (revisa /ui/theme/*)\r\n            Appgamezone_008v_grupo14Theme {\r\n                val repo = remember { UserRepository(this) }\r\n                var currentScreen by remember {\r\n                    mutableStateOf(if (repo.getSavedUser() != null) \"home\" else \"login\")\r\n                }\r\n\r\n                when (currentScreen) {\r\n                    \"login\" -> LoginScreen(\r\n                        onLoginSuccess = { currentScreen = \"home\" },\r\n                        onGoToRegister = { currentScreen = \"register\" }\r\n                    )\r\n                    \"register\" -> RegisterScreen(\r\n                        onGoToLogin = { currentScreen = \"login\" }\r\n                    )\r\n                    \"home\" -> HomeScreen(\r\n                        onLogout = { currentScreen = \"login\" }\r\n                    )\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/appgamezone_008v_grupo14/MainActivity.kt b/app/src/main/java/com/example/appgamezone_008v_grupo14/MainActivity.kt
+--- a/app/src/main/java/com/example/appgamezone_008v_grupo14/MainActivity.kt	(revision f7fecc1d8d60bfe7224d888575ece94dbcfbb57f)
++++ b/app/src/main/java/com/example/appgamezone_008v_grupo14/MainActivity.kt	(date 1762548961012)
+@@ -4,6 +4,7 @@
+ import androidx.activity.ComponentActivity
+ import androidx.activity.compose.setContent
+ import androidx.compose.runtime.*
++import androidx.compose.ui.platform.LocalContext
+ import com.example.appgamezone_008v_grupo14.data.UserRepository
+ import com.example.appgamezone_008v_grupo14.ui.theme.Appgamezone_008v_grupo14Theme
+ import com.example.appgamezone_008v_grupo14.views.HomeScreen
+@@ -14,9 +15,11 @@
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         setContent {
+-            // ⚠️ AJUSTA el nombre del Theme a tu proyecto real (revisa /ui/theme/*)
++            // Asegúrate de que ESTE nombre exista en ui/theme/Theme.kt
+             Appgamezone_008v_grupo14Theme {
+-                val repo = remember { UserRepository(this) }
++                val context = LocalContext.current
++                // crea el repo con un contexto estable
++                val repo = remember(context) { UserRepository(context) }
+                 var currentScreen by remember {
+                     mutableStateOf(if (repo.getSavedUser() != null) "home" else "login")
+                 }
+Index: app/src/main/java/com/example/appgamezone_008v_grupo14/views/HomeScreen.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.appgamezone_008v_grupo14.views\r\n\r\nimport androidx.compose.foundation.layout.*\r\nimport androidx.compose.material3.*\r\nimport androidx.compose.material3.icons.Icons\r\nimport androidx.compose.material3.icons.outlined.AccountCircle\r\nimport androidx.compose.runtime.*\r\nimport androidx.compose.ui.Alignment\r\nimport androidx.compose.ui.Modifier\r\nimport androidx.compose.ui.platform.LocalContext\r\nimport androidx.compose.ui.text.style.TextAlign\r\nimport androidx.compose.ui.unit.dp\r\nimport com.example.appgamezone_008v_grupo14.data.UserRepository\r\n\r\n@Composable\r\nfun HomeScreen(\r\n    onLogout: () -> Unit\r\n) {\r\n    val context = LocalContext.current\r\n    val repo = remember { UserRepository(context) }\r\n    val user = remember { repo.getSavedUser() }\r\n\r\n    Column(\r\n        modifier = Modifier\r\n            .fillMaxSize()\r\n            .padding(24.dp),\r\n        verticalArrangement = Arrangement.spacedBy(16.dp),\r\n        horizontalAlignment = Alignment.CenterHorizontally\r\n    ) {\r\n        Icon(\r\n            imageVector = Icons.Outlined.AccountCircle,\r\n            contentDescription = null,\r\n            modifier = Modifier.size(96.dp)\r\n        )\r\n\r\n        Text(\r\n            text = \"¡Bienvenido(a) a GAMEZONE!\",\r\n            style = MaterialTheme.typography.headlineSmall,\r\n            textAlign = TextAlign.Center\r\n        )\r\n\r\n        if (user != null) {\r\n            Text(\"Nombre: ${user.fullName}\", style = MaterialTheme.typography.titleMedium)\r\n            Text(\"Correo: ${user.email}\", style = MaterialTheme.typography.bodyMedium)\r\n            if (user.genres.isNotEmpty()) {\r\n                Text(\"Géneros favoritos:\", style = MaterialTheme.typography.titleSmall)\r\n                Text(user.genres.joinToString(\" • \"), style = MaterialTheme.typography.bodySmall)\r\n            }\r\n        } else {\r\n            Text(\r\n                \"No hay usuario almacenado en este dispositivo.\",\r\n                style = MaterialTheme.typography.bodyMedium,\r\n                color = MaterialTheme.colorScheme.error\r\n            )\r\n        }\r\n\r\n        Spacer(Modifier.height(24.dp))\r\n\r\n        Button(\r\n            onClick = { /* Navegar a otra sección si quieres */ },\r\n            modifier = Modifier.fillMaxWidth()\r\n        ) { Text(\"Explorar\") }\r\n\r\n        OutlinedButton(\r\n            onClick = {\r\n                repo.clearUser()\r\n                onLogout()\r\n            },\r\n            modifier = Modifier.fillMaxWidth()\r\n        ) { Text(\"Cerrar sesión\") }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/appgamezone_008v_grupo14/views/HomeScreen.kt b/app/src/main/java/com/example/appgamezone_008v_grupo14/views/HomeScreen.kt
+--- a/app/src/main/java/com/example/appgamezone_008v_grupo14/views/HomeScreen.kt	(revision f7fecc1d8d60bfe7224d888575ece94dbcfbb57f)
++++ b/app/src/main/java/com/example/appgamezone_008v_grupo14/views/HomeScreen.kt	(date 1762549281471)
+@@ -2,8 +2,6 @@
+ 
+ import androidx.compose.foundation.layout.*
+ import androidx.compose.material3.*
+-import androidx.compose.material3.icons.Icons
+-import androidx.compose.material3.icons.outlined.AccountCircle
+ import androidx.compose.runtime.*
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+@@ -27,11 +25,6 @@
+         verticalArrangement = Arrangement.spacedBy(16.dp),
+         horizontalAlignment = Alignment.CenterHorizontally
+     ) {
+-        Icon(
+-            imageVector = Icons.Outlined.AccountCircle,
+-            contentDescription = null,
+-            modifier = Modifier.size(96.dp)
+-        )
+ 
+         Text(
+             text = "¡Bienvenido(a) a GAMEZONE!",
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    package=\"com.example.appgamezone_008v_grupo14\">\r\n\r\n    <application\r\n        android:allowBackup=\"true\"\r\n        android:icon=\"@mipmap/ic_launcher\"\r\n        android:label=\"@string/app_name\"\r\n        android:roundIcon=\"@mipmap/ic_launcher_round\"\r\n        android:supportsRtl=\"true\"\r\n        android:theme=\"@style/Theme.Appgamezone_008v_grupo14\">\r\n\r\n        <activity android:name=\".MainActivity\">\r\n            <intent-filter>\r\n                <action android:name=\"android.intent.action.MAIN\" />\r\n                <category android:name=\"android.intent.category.LAUNCHER\" />\r\n            </intent-filter>\r\n        </activity>\r\n\r\n    </application>\r\n</manifest>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+--- a/app/src/main/AndroidManifest.xml	(revision f7fecc1d8d60bfe7224d888575ece94dbcfbb57f)
++++ b/app/src/main/AndroidManifest.xml	(date 1762549054740)
+@@ -10,12 +10,15 @@
+         android:supportsRtl="true"
+         android:theme="@style/Theme.Appgamezone_008v_grupo14">
+ 
+-        <activity android:name=".MainActivity">
++        <activity
++            android:name=".MainActivity"
++            android:exported="true">
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN" />
+                 <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+         </activity>
+ 
++
+     </application>
+ </manifest>
+\ No newline at end of file
+Index: .idea/deploymentTargetSelector.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"deploymentTargetSelector\">\r\n    <selectionStates>\r\n      <SelectionState runConfigName=\"app\">\r\n        <option name=\"selectionMode\" value=\"DROPDOWN\" />\r\n        <DropdownSelection timestamp=\"2025-11-03T21:50:38.074129700Z\">\r\n          <Target type=\"DEFAULT_BOOT\">\r\n            <handle>\r\n              <DeviceId pluginId=\"LocalEmulator\" identifier=\"path=C:\\Users\\dante\\.android\\avd\\Pixel_9_Pro.avd\" />\r\n            </handle>\r\n          </Target>\r\n        </DropdownSelection>\r\n        <DialogSelection />\r\n      </SelectionState>\r\n    </selectionStates>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/deploymentTargetSelector.xml b/.idea/deploymentTargetSelector.xml
+--- a/.idea/deploymentTargetSelector.xml	(revision f7fecc1d8d60bfe7224d888575ece94dbcfbb57f)
++++ b/.idea/deploymentTargetSelector.xml	(date 1762549293112)
+@@ -4,7 +4,7 @@
+     <selectionStates>
+       <SelectionState runConfigName="app">
+         <option name="selectionMode" value="DROPDOWN" />
+-        <DropdownSelection timestamp="2025-11-03T21:50:38.074129700Z">
++        <DropdownSelection timestamp="2025-11-07T20:59:37.269376400Z">
+           <Target type="DEFAULT_BOOT">
+             <handle>
+               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\dante\.android\avd\Pixel_9_Pro.avd" />
