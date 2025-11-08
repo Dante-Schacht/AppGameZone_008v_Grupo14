@@ -1,8 +1,6 @@
 package com.example.appgamezone_008v_grupo14.ui.viewmodel
 
 import android.app.Application
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appgamezone_008v_grupo14.data.Prefs
@@ -31,11 +29,6 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = Prefs(app)
     private val _state = MutableStateFlow(AuthUiState())
     val state: StateFlow<AuthUiState> = _state
-
-    private fun vibrate() {
-        val vib = getApplication<Application>().getSystemService(Vibrator::class.java)
-        vib?.vibrate(VibrationEffect.createOneShot(80, VibrationEffect.DEFAULT_AMPLITUDE))
-    }
 
     fun toggleGenre(g: String) {
         val current = _state.value.genres.toMutableList()
@@ -68,7 +61,6 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
 
         if (errs.isNotEmpty()) {
             _state.value = _state.value.copy(errors = errs)
-            vibrate()
             return
         }
 
@@ -90,7 +82,12 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun login(email: String, password: String, onError: (String) -> Unit) {
+    fun login(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        if (email.isBlank() || password.isBlank()) {
+            onError("Debes rellenar todos los campos.")
+            return
+        }
+
         viewModelScope.launch {
             val saved = prefs.userFlow().first()
             var ok = false
@@ -104,9 +101,9 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
             }
             if (!ok) {
                 onError("Usuario o contraseña inválidos.")
-                vibrate()
             } else {
                 _state.value = _state.value.copy(loggedIn = true)
+                onSuccess()
             }
         }
     }

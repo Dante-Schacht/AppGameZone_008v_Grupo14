@@ -38,7 +38,7 @@ fun LoginScreen(onLogged: () -> Unit, onBack: () -> Unit, onGoRegister: () -> Un
                 Text(error ?: "", color = MaterialTheme.colorScheme.error)
             }
 
-            Button(onClick = { vm.login(email, pass) { error = it }; if (vm.state.value.loggedIn) onLogged() },
+            Button(onClick = { vm.login(email, pass, onSuccess = onLogged, onError = { error = it }) },
                 modifier = Modifier.fillMaxWidth()) {
                 Text("Ingresar")
             }
