@@ -52,5 +52,30 @@ class ProfileViewModel(app: Application): AndroidViewModel(app) {
 
     fun updateAvatar(uri: String?) {
         _state.value = _state.value.copy(avatarUri = uri)
+        saveGenres()
+    }
+
+    fun toggleGenre(genre: String) {
+        val currentGenres = _state.value.genres.toMutableList()
+        if (currentGenres.contains(genre)) {
+            currentGenres.remove(genre)
+        } else {
+            currentGenres.add(genre)
+        }
+        _state.value = _state.value.copy(genres = currentGenres)
+        saveGenres()
+    }
+
+    private fun saveGenres() {
+        viewModelScope.launch {
+            val current = JSONObject().apply {
+                put("fullName", _state.value.fullName)
+                put("email", _state.value.email)
+                put("phone", _state.value.phone)
+                put("genres", _state.value.genres.joinToString(","))
+                put("avatarUri", _state.value.avatarUri)
+            }.toString()
+            prefs.saveUser(current)
+        }
     }
 }

@@ -49,7 +49,7 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setAvatar(uri: String?) { _state.value = _state.value.copy(avatarUri = uri) }
 
-    fun register(onSuccess: () -> Unit) {
+    fun register() {
         val s = _state.value
         val errs = mapOf(
             "name" to Validators.validateName(s.fullName),
@@ -78,11 +78,10 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
             prefs.saveUser(json)
             prefs.saveToken("local-token")
             _state.value = _state.value.copy(loading = false, loggedIn = true)
-            onSuccess()
         }
     }
 
-    fun login(email: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun login(email: String, password: String, onError: (String) -> Unit) {
         if (email.isBlank() || password.isBlank()) {
             onError("Debes rellenar todos los campos.")
             return
@@ -103,8 +102,11 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
                 onError("Usuario o contraseña inválidos.")
             } else {
                 _state.value = _state.value.copy(loggedIn = true)
-                onSuccess()
             }
         }
+    }
+    
+    fun onLoginSuccess() {
+        // Placeholder for any logic needed after successful login
     }
 }

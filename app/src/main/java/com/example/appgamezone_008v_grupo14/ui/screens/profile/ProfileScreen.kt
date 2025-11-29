@@ -6,34 +6,21 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Photo
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -50,29 +37,17 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun ProfileScreen(onBack: () -> Unit, onLogout: () -> Unit) {
     val vm: ProfileViewModel = viewModel()
     val st = vm.state.collectAsState().value
     val context = LocalContext.current
 
-    // --------- Permisos dinámicos ----------
+    // --- Permisos y Launchers ---
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
-    val galleryPermission =
-        if (android.os.Build.VERSION.SDK_INT >= 33)
-            rememberPermissionState(Manifest.permission.READ_MEDIA_IMAGES)
-        else
-            rememberPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE)
-
-    // --------- Galería (GetContent) ----------
-    val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        vm.updateAvatar(uri?.toString())
-    }
-
-    // --------- Cámara (TakePicture con FileProvider) ----------
+    val galleryPermission = if (android.os.Build.VERSION.SDK_INT >= 33) rememberPermissionState(Manifest.permission.READ_MEDIA_IMAGES) else rememberPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE)
+    val galleryLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? -> vm.updateAvatar(uri?.toString()) }
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
     fun createImageFile(context: Context): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
@@ -80,25 +55,13 @@ fun ProfileScreen(onBack: () -> Unit, onLogout: () -> Unit) {
     }
     fun newCameraUri(context: Context): Uri {
         val file = createImageFile(context)
-        return FileProvider.getUriForFile(
-            context,
-            "com.example.appgamezone_008v_grupo14.fileprovider",
-            file
-        )
+        return FileProvider.getUriForFile(context, "com.example.appgamezone_008v_grupo14.fileprovider", file)
     }
-
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
-    ) { success: Boolean ->
+    val cameraLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture()) { success: Boolean ->
         val uri = cameraUri
-        if (success && uri != null) {
-            vm.updateAvatar(uri.toString())
-        }
+        if (success && uri != null) vm.updateAvatar(uri.toString())
     }
-
-    val askCameraPermission = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { granted ->
+    val askCameraPermission = rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
             val uri = newCameraUri(context)
             cameraUri = uri
@@ -145,11 +108,7 @@ fun ProfileScreen(onBack: () -> Unit, onLogout: () -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(
                     onClick = {
-                        if (galleryPermission.status.isGranted) {
-                            galleryLauncher.launch("image/*")
-                        } else {
-                            galleryPermission.launchPermissionRequest()
-                        }
+                        if (galleryPermission.status.isGranted) galleryLauncher.launch("image/*") else galleryPermission.launchPermissionRequest()
                     }
                 ) {
                     Icon(Icons.Filled.Photo, contentDescription = null)
@@ -159,9 +118,7 @@ fun ProfileScreen(onBack: () -> Unit, onLogout: () -> Unit) {
 
                 OutlinedButton(
                     onClick = {
-                        val granted = ContextCompat.checkSelfPermission(
-                            context, Manifest.permission.CAMERA
-                        ) == PackageManager.PERMISSION_GRANTED
+                        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
                         if (granted) {
                             val uri = newCameraUri(context)
                             cameraUri = uri
@@ -177,11 +134,34 @@ fun ProfileScreen(onBack: () -> Unit, onLogout: () -> Unit) {
                 }
             }
 
-            if (st.genres.isNotEmpty()) {
-                Text("Géneros: ${st.genres.joinToString()}")
+            // --- Géneros Editables con FlowRow ---
+            Text("Mis Géneros Favoritos")
+            val allGenres = listOf("Ficción", "No Ficción", "Misterio", "Terror", "Suspenso", "Historia")
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                allGenres.forEach { g ->
+                    AnimatedFilterChip(label = g, selected = st.genres.contains(g), onClick = { vm.toggleGenre(g) })
+                }
             }
 
+            Spacer(Modifier.height(16.dp))
             Button(onClick = { vm.logout(onLogout) }) { Text("Cerrar sesión") }
         }
     }
+}
+
+@Composable
+private fun AnimatedFilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val borderColor by animateColorAsState(if (selected) MaterialTheme.colorScheme.primary else Color.Gray, label = "chip_border_color")
+    val borderWidth by animateDpAsState(if (selected) 2.dp else 1.dp, label = "chip_border_width")
+
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(label) },
+        border = BorderStroke(borderWidth, borderColor)
+    )
 }
