@@ -91,14 +91,14 @@ fun HomeScreen(currentUser: User?, onHomeClick: () -> Unit, onProfileClick: () -
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
-                    label = { Text("Perfil") },
-                    selected = selectedItem == "perfil",
+                    label = { Text("profile") },
+                    selected = selectedItem == "profile",
                     onClick = {
                         scope.launch {
                             drawerState.close()
                             onProfileClick()
                         }
-                        selectedItem = "perfil"
+                        selectedItem = "profile"
                     }
                 )
                 NavigationDrawerItem(

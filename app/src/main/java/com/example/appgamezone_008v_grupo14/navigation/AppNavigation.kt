@@ -9,10 +9,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.appgamezone_008v_grupo14.GameZoneApplication
-import com.example.appgamezone_008v_grupo14.data.User
 import com.example.appgamezone_008v_grupo14.ui.screen.AdminScreen
 import com.example.appgamezone_008v_grupo14.ui.screen.CartScreen
 import com.example.appgamezone_008v_grupo14.ui.screen.GameDetailScreen
@@ -38,16 +38,20 @@ fun AppNavigation() {
     val cartItemCount by cartViewModel.cartItemCount.collectAsState()
 
     val currentUser by authViewModel.currentUser.collectAsState()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
-    LaunchedEffect(currentUser) {
+    LaunchedEffect(currentUser, currentRoute) {
         if (currentUser != null) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
+            if (currentRoute == "login" || currentRoute == "register") {
+                navController.navigate("home") {
+                    popUpTo(currentRoute) { inclusive = true }
+                }
             }
         } else {
-            if (navController.currentDestination?.route != "login" && navController.currentDestination?.route != "register") {
+            if (currentRoute != "login" && currentRoute != "register") {
                 navController.navigate("login") {
-                    popUpTo("home") { inclusive = true }
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
                 }
             }
         }
@@ -70,19 +74,19 @@ fun AppNavigation() {
             HomeScreen(
                 currentUser = currentUser,
                 onHomeClick = { navController.navigate("home") },
-                onProfileClick = { navController.navigate("perfil") },
+                onProfileClick = { navController.navigate("profile") },
                 onPedidosClick = { navController.navigate("pedidos") },
                 onAdminClick = { navController.navigate("admin") },
                 onCartClick = { navController.navigate("cart") },
                 onGameClick = { gameId -> navController.navigate("gameDetail/$gameId") }
             )
         }
-        composable("perfil") {
+        composable("profile") {
             ProfileScreen(
                 currentUser = currentUser,
                 authViewModel = authViewModel,
                 onHomeClick = { navController.navigate("home") },
-                onProfileClick = { navController.navigate("perfil") },
+                onProfileClick = { navController.navigate("profile") },
                 onPedidosClick = { navController.navigate("pedidos") },
                 onAdminClick = { navController.navigate("admin") },
                 onCartClick = { navController.navigate("cart") }
@@ -92,7 +96,7 @@ fun AppNavigation() {
             PedidosScreen(
                 currentUser = currentUser,
                 onHomeClick = { navController.navigate("home") },
-                onProfileClick = { navController.navigate("perfil") },
+                onProfileClick = { navController.navigate("profile") },
                 onPedidosClick = { navController.navigate("pedidos") },
                 onAdminClick = { navController.navigate("admin") },
                 onCartClick = { navController.navigate("cart") }
@@ -102,7 +106,7 @@ fun AppNavigation() {
             AdminScreen(
                 currentUser = currentUser,
                 onHomeClick = { navController.navigate("home") },
-                onProfileClick = { navController.navigate("perfil") },
+                onProfileClick = { navController.navigate("profile") },
                 onPedidosClick = { navController.navigate("pedidos") },
                 onAdminClick = { navController.navigate("admin") },
                 onCartClick = { navController.navigate("cart") }
@@ -112,7 +116,7 @@ fun AppNavigation() {
             CartScreen(
                 currentUser = currentUser,
                 onHomeClick = { navController.navigate("home") },
-                onProfileClick = { navController.navigate("perfil") },
+                onProfileClick = { navController.navigate("profile") },
                 onPedidosClick = { navController.navigate("pedidos") },
                 onAdminClick = { navController.navigate("admin") },
                 onCartClick = { navController.navigate("cart") }

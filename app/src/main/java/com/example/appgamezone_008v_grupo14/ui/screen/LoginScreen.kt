@@ -1,5 +1,6 @@
 package com.example.appgamezone_008v_grupo14.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -26,6 +28,14 @@ fun LoginScreen(authViewModel: AuthViewModel, onNavigateToRegister: () -> Unit) 
     var passwordVisible by remember { mutableStateOf(false) }
 
     val error by authViewModel.error.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(error) {
+        error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            authViewModel.resetError()
+        }
+    }
 
     // La navegación ahora se maneja en MainActivity, observando el estado del ViewModel.
 
@@ -84,9 +94,5 @@ fun LoginScreen(authViewModel: AuthViewModel, onNavigateToRegister: () -> Unit) 
         }
 
         Spacer(modifier = Modifier.weight(2.5f))
-
-        error?.let {
-            Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(bottom = 16.dp))
-        }
     }
 }
