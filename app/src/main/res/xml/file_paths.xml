@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Guardaremos la foto tomada en el caché externo -->
-    <external-cache-path
-        name="my_images"
-        path="." />
+<paths>
+    <cache-path name="shared_images" path="."/>
 </paths>

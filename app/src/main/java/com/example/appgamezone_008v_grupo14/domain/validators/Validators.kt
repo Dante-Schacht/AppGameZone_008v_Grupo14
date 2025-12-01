@@ -1,36 +1,73 @@
 package com.example.appgamezone_008v_grupo14.domain.validators
 
+import android.util.Patterns
+
 object Validators {
-    private val nameRegex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]{1,100}$")
-    private val duocRegex = Regex("^[A-Za-z0-9._%+-]+@duoc\\.cl$")
-    private val upper = Regex("[A-ZÁÉÍÓÚÑ]")
-    private val lower = Regex("[a-záéíóúñ]")
-    private val digit = Regex("\\d")
-    private val special = Regex("[@#\$%&*!?._-]")
 
-    fun validateName(name: String) = when {
-        name.isBlank() -> "El nombre no puede estar vacío."
-        !nameRegex.matches(name) -> "Solo letras y espacios (máx. 100)."
-        else -> null
+    fun validateFullName(name: String): String? {
+        if (name.isBlank()) {
+            return "El nombre no puede estar vacío."
+        }
+        if (name.length > 100) {
+            return "El nombre no puede tener más de 100 caracteres."
+        }
+        if (!name.matches(Regex("^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$"))) {
+            return "El nombre solo puede contener letras y espacios."
+        }
+        return null
     }
 
-    fun validateEmail(email: String) = when {
-        !duocRegex.matches(email) -> "Usa un correo @duoc.cl válido."
-        else -> null
+    fun validateEmail(email: String): String? {
+        if (email.isBlank()) {
+            return "El correo no puede estar vacío."
+        }
+        if (email.length > 60) {
+            return "El correo no puede tener más de 60 caracteres."
+        }
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            return "El formato del correo no es válido."
+        }
+        if (!email.endsWith("@duoc.cl")) {
+            return "El correo debe ser de dominio @duoc.cl."
+        }
+        return null
     }
 
-    fun validatePassword(pw: String) = when {
-        pw.length < 10 -> "Mínimo 10 caracteres."
-        !upper.containsMatchIn(pw) -> "Debe incluir mayúscula."
-        !lower.containsMatchIn(pw) -> "Debe incluir minúscula."
-        !digit.containsMatchIn(pw) -> "Debe incluir número."
-        !special.containsMatchIn(pw) -> "Debe incluir carácter especial (@#%...)."
-        else -> null
+    fun validatePassword(password: String): String? {
+        if (password.length < 10) {
+            return "La contraseña debe tener al menos 10 caracteres."
+        }
+        if (!password.contains(Regex("[A-Z]"))) {
+            return "Debe incluir al menos una letra mayúscula."
+        }
+        if (!password.contains(Regex("[a-z]"))) {
+            return "Debe incluir al menos una letra minúscula."
+        }
+        if (!password.contains(Regex("[0-9]"))) {
+            return "Debe incluir al menos un número."
+        }
+        if (!password.contains(Regex("[@#$%.]"))) {
+            return "Debe incluir al menos un carácter especial (@#$%.)."
+        }
+        return null
     }
 
-    fun validateConfirm(pw: String, confirm: String) =
-        if (pw != confirm) "Las contraseñas no coinciden." else null
+    fun validateConfirmPassword(password: String, confirm: String): String? {
+        if (password != confirm) {
+            return "Las contraseñas no coinciden."
+        }
+        return null
+    }
 
-    fun validateGenres(genres: List<String>) =
-        if (genres.isEmpty()) "Selecciona al menos un género." else null
+    fun validatePhone(phone: String): String? {
+        if (phone.isNotBlank()) {
+            if (!phone.matches(Regex("^[0-9]+$"))) {
+                return "El teléfono solo debe contener números."
+            }
+            if (phone.length != 9) {
+                return "El teléfono debe tener 9 dígitos."
+            }
+        }
+        return null
+    }
 }
